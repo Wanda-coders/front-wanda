@@ -16,7 +16,7 @@ function* addToCart({ productId }) {
     state.cart.find(product => product.id === productId)
   );
 
-  const stock = yield call(api.get, `/invetory/${productId}`);
+  const stock = yield call(api.get, `/inventoryTotal/${productId}`);
 
   const stockAmount = stock.data.amount;
   const currentAmount = productExists ? productExists.amount : 0;
@@ -33,13 +33,16 @@ function* addToCart({ productId }) {
   } else {
     // faz operações com promises a partir do call
     // ele quem manipula chamadas a partir dos generators
-    const response = yield call(api.get, `/invetory/${productId}`);
+    const response = yield call(api.get, `/catalog/${productId}`);
 
     // monta com dados necessários no componente de carrinhos
     const data = {
-      ...response.data,
+      id: response.data.id,
+      image: response.data.image,
+      title: response.data.name,
+      price: response.data.unit_value,
       amount: 1,
-      formattedPrice: formatPrice(response.data.price),
+      formattedPrice: formatPrice(response.data.unit_value),
     };
 
     // put faz um "redirecionamento" de actions, chamando
@@ -54,7 +57,7 @@ function* addToCart({ productId }) {
 function* updateAmount({ productId, amount }) {
   if (amount <= 0) return;
 
-  const stock = yield call(api.get, `/stock/${productId}`);
+  const stock = yield call(api.get, `/inventoryTotal/${productId}`);
   const stockAmount = stock.data.amount;
 
   if (amount > stockAmount) {
